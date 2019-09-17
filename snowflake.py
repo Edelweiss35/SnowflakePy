@@ -30,29 +30,45 @@ try:
     # cursor = conn.cursor()
     # cursor.execute(sql)
 
-    sql = "Drop table store.store_c.location"
-    cursor = conn.cursor()
-    cursor.execute(sql)
+    # sql = "Drop table store.store_c.location"
+    # cursor = conn.cursor()
+    # cursor.execute(sql)
 
-    sql = "CREATE TABLE IF NOT EXISTS store.store_c.location(location_id number, location_name varchar(500), location_distance varchar(500), location_zip varchar(500), location_city varchar(500), location_phone varchar(500))"
-    cursor = conn.cursor()
-    cursor.execute(sql)
+    # sql = "CREATE TABLE IF NOT EXISTS store.store_c.location(location_id number, location_name varchar(500), location_distance varchar(500), location_zip varchar(500), location_city varchar(500), location_phone varchar(500))"
+    # cursor = conn.cursor()
+    # cursor.execute(sql)
 
-    store_path = 'store_csv'
+    store_path = 'store_csv/9'
+    store_list = []
     for file in os.listdir(store_path):
         if file.endswith(".csv"):
             filename = (os.path.join(store_path, file))
+            print(filename)
             with open(filename) as csv_file:
                 csv_reader = csv.reader(csv_file, delimiter=',')
                 for row in csv_reader:
                     if len(row) == 7:
                         if row[1] == "store_id":
                             continue
-                        print(row[0])
-                        sql = "INSERT INTO store.store_c.location(location_id, location_name, location_distance, location_zip, location_city, location_phone) VALUES (" + row[1] + ", '" + row[0] + "', '" + row[2] + "', '" + row[4] + "', '" + row[5] + "', '" + row[6] + "')"
-                        print(sql)
-                        cursor = conn.cursor()
-                        cursor.execute(sql)
+                        if row in store_list:
+                            continue
+                        store_list.append(row)
+            print(len(store_list))
+    p = 0
+    sql_pre = "INSERT INTO store.store_c.location(location_id, location_name, location_distance, location_zip, location_city, location_phone) VALUES"
+    comma = ","
+    for row in store_list:
+        # sql = "INSERT INTO store.store_c.location(location_id, location_name, location_distance, location_zip, location_city, location_phone) VALUES (" + row[1] + ", '" + row[0] + "', '" + row[2] + "', '" + row[4] + "', '" + row[5] + "', '" + row[6] + "')"
+        sql_back = " (" + row[1] + ", '" + row[0] + "', '" + row[2] + "', '" + row[4] + "', '" + row[5] + "', '" + row[6] + "')"
+        if p == 0:
+            sql_pre = sql_pre + sql_back
+            p = p + 1
+            continue
+        sql_pre = sql_pre + "," + sql_back
+        p = p + 1
+        print(p)
+    cursor = conn.cursor()
+    cursor.execute(sql_pre)
 
 except Exception as e:
     print(e)
